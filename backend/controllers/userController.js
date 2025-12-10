@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken" //use for user authantication
 import bcrypt from "bcrypt"
 import validator from "validator"
 import { response } from "express";
+import { accessSync } from "fs";
 
 // login user
 const loginUser=async(req,res)=>{
@@ -71,11 +72,84 @@ res.json({success:true,token})
 
 } catch (error) {
     console.log(error)
+    res.status(500).json({success:false,message:"Error"})
+}
+}
+
+
+const getUserProfile=async (req,res)=>{
+
+
+try {
+const user=await userModel.findById(req.body.userId).select("-password")
+if(!user){
+
+    return res.json(({success:false,message:"user Not found"}))
+}
+res.json({
+success:true,
+data:{
+    name:user.name||"",
+    email:user.email ||"",
+    diet:user.diet ||"",
+    allergies:user.allergies||[],
+    dislikes:user.dislikes||[],
+    pastOrders:user.pastOrders||[]
+}
+})
+} catch (error) {
+    console.log(error)
     res.json({success:false,message:"Error"})
+    
 }
 }
 
+const updateUserProfile=async(req,res)=>{
 
-export{loginUser,registerUser}
+try {
+const {name,email,diet,allergies,dislikes}=req.body;
+const userId=req.body.userId;
+
+const updateData={};
+if(name !==undefined)updateData.name=name;
+if(email !==undefined)updateData.email=email;
+if(diet !==undefined)updateData.diet=diet;
+if(allergies !==undefined)updateData.allergies=allergies;
+if(dislikes !==undefined)updateData.dislikes=dislikes;
+
+const user=await userModel.findByIdAndUpdate(
+    userId,
+    {$set:updateData},
+    {new:true}
+).select("-password")
+
+if(!user){
+    return res.json({success:false,message:"user Not Found"})
+}
+
+res.json({
+success:true,
+data:{
+    name:user.name||"",
+    email:user.email||"",
+    diet:user.diet||"",
+    allergies:user.allergies||[],
+    dislikes:user.dislikes||[],
+    pastOrders:user.pastOrders||[]
+}
+})
+} catch (error) {
+    console.log(error)
+    res.json({success:false,message:"Error updateing profile"})
+    
+}
+
+}
+
+
+
+
+
+export{loginUser,registerUser,getUserProfile,updateUserProfile}
 
 

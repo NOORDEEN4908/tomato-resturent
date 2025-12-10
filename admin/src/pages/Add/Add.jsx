@@ -1,78 +1,92 @@
-import React, {  useState } from 'react'
+import React, { useState } from 'react'
 import './Add.css'
 import { assets } from '../../assets/assets'
 import axios from "axios"
 import { toast } from 'react-toastify'
 
-const Add = ({url}) => {
+const Add = ({ url }) => {
 
+    const [image, setImage] = useState(false);
+    const [data, setData] = useState({
+        name: "",
+        description: "",
+        price: "",
+        category: "Salad",
+        season: "all",
+        
+        nutrition: "" // user will enter JSON-like text
+    });
 
-const[image,setImage] =useState(false);
-const [data,setData] =useState({
-    name:"",  
-    description:"",
-    price:"",
-    category:"Salad" // this is default show in page 
-})
+    const onChangeHandler = (event) => {
+        const name = event.target.name;
+        const value = event.target.value;
+        setData((prev) => ({ ...prev, [name]: value }));
+    };
 
+    const onSubmitHandler = async (event) => {
+        event.preventDefault();
 
-const onChangeHandler=(event)=>{
-    const name=event.target.name;
-    const value=event.target.value;
-    setData(data=>({...data,[name]:value}))
-} 
+        const formData = new FormData();
+        formData.append("name", data.name);
+        formData.append("description", data.description);
+        formData.append("price", Number(data.price));
+        formData.append("category", data.category);
+        formData.append("image", image);
 
-const onSubmitHandler=async(event)=>{
-event.preventDefault(); // use this to not reload the page
-const formData=new FormData();
-formData.append("name",data.name)
-formData.append("description",data.description)
-formData.append("price",Number(data.price))
-formData.append("category",data.category)
-formData.append("image",image)
-const response =await axios.post(`${url}/api/food/add`,formData);
-if(response.data.success){
-    setData({
-        name:"",  
-        description:"",
-        price:"",
-        category:"Salad" // this is default show in page 
-    })
-    setImage(false)
-    toast.success(response.data.message)
-    
+        // NEW FIELDS (backend needs these)
+        formData.append("season", data.season);
+       
+        formData.append("nutrition", data.nutrition); // backend will JSON.parse
 
-}else {
-    
-    toast.error(response.data.message)
-}
-}
+        const response = await axios.post(`${url}/api/food/add`, formData);
 
-
-
+        if (response.data.success) {
+            setData({
+                name: "",
+                description: "",
+                price: "",
+                category: "Salad",
+                season: "all",
+              
+                nutrition: ""
+            });
+            setImage(false);
+            toast.success(response.data.message);
+        } else {
+            toast.error(response.data.message);
+        }
+    };
 
     return (
-        <div className='add' >
-            <form action="" className='flex-col' onSubmit={onSubmitHandler} >
-                <div className='add-img-upload flex-col ' >
+        <div className='add'>
+            <form className='flex-col' onSubmit={onSubmitHandler}>
+                
+                {/* Image */}
+                <div className='add-img-upload flex-col'>
                     <p>Upload Image</p>
                     <label htmlFor="image">
-                        <img src={image?URL.createObjectURL(image): assets.upload_area} alt="" />
+                        <img src={image ? URL.createObjectURL(image) : assets.upload_area} alt="" />
                     </label>
-                    <input onChange={(e)=>setImage(e.target.files[0])}   type="file" id='image' hidden required />
+                    <input onChange={(e) => setImage(e.target.files[0])} type="file" id='image' hidden required />
                 </div>
+
+                {/* Name */}
                 <div className="add-product-name flex-col">
                     <p>Product name</p>
-                    <input  onChange={onChangeHandler}value={data.name}  type="text" name='name' placeholder='Type here' />
+                    <input onChange={onChangeHandler} value={data.name} type="text" name='name' placeholder='Type here' required />
                 </div>
-                <div className='add-product-description flex-col '>
+
+                {/* Description */}
+                <div className='add-product-description flex-col'>
                     <p>Product description</p>
-                    <textarea onChange={onChangeHandler} value={data.description} name="description" rows="6" placeholder='Write content here' required ></textarea>
+                    <textarea onChange={onChangeHandler} value={data.description} name="description" rows="6" placeholder='Write content here' required></textarea>
                 </div>
+
+                {/* Category + Price */}
                 <div className='add-category-price'>
                     <div className="add-category flex-col">
                         <p>Product category</p>
-                        <select onChange={onChangeHandler} name="category">
+                        <select onChange={onChangeHandler} name="category" value={data.category}>
                             <option value="Salad">Salad</option>
                             <option value="Rolls">Rolls</option>
                             <option value="Deserts">Deserts</option>
@@ -83,18 +97,41 @@ if(response.data.success){
                             <option value="Noodles">Noodles</option>
                         </select>
                     </div>
+
                     <div className="add-price flex-col">
                         <p>Product Price</p>
-                        <input onChange={onChangeHandler} value={data.price} type="number" name='price' placeholder='$20' />
+                        <input onChange={onChangeHandler} value={data.price} type="number" name='price' placeholder='$20' required />
                     </div>
-        </div>
-                  <button type='submit' className='add-btn' >ADD</button>
+                </div>
+
+                {/* NEW FIELDS */}
+                <div className="flex-col">
+                    <p>Season</p>
+                    <select name="season" value={data.season} onChange={onChangeHandler}>
+                        <option value="all">All</option>
+                        <option value="winter">Winter</option>
+                        <option value="summer">Summer</option>
+                        <option value="rainy">Rainy</option>
+                    </select>
+                </div>
+
+               
+
+                <div className="flex-col">
+                    <p>Nutrition (JSON)</p>
+                    <textarea
+                        name="nutrition"
+                        rows="3"
+                        placeholder='{"calories": 200, "protein": 10}'
+                        value={data.nutrition}
+                        onChange={onChangeHandler}
+                    ></textarea>
+                </div>
+
+                <button type='submit' className='add-btn'>ADD</button>
             </form>
-
-
-
         </div>
-    )
-}
+    );
+};
 
-export default Add
+export default Add;

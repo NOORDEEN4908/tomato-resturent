@@ -17,7 +17,26 @@ const port = 4000
 //middleware
 //use this to access backend to frontend
 app.use(express.json())
-app.use(cors())
+
+// CORS: restrict origins to configured frontend(s)
+const allowedOrigins = (process.env.FRONTEND_URL || "http://localhost:5173,http://localhost:3000")
+  .split(",")
+  .map((o) => o.trim())
+  .filter(Boolean);
+
+const corsOptions = {
+  origin: (origin, cb) => {
+    if (!origin) return cb(null, true); // allow non-browser or same-origin
+    if (allowedOrigins.includes(origin)) return cb(null, true);
+    return cb(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "token"],
+};
+
+app.use(cors(corsOptions))
+app.options("*", cors(corsOptions))
 
 //db connection
 connectDB();

@@ -5,10 +5,18 @@ import Stripe from "stripe"
 
 const stripe =new Stripe(process.env.STRIPE_SECRET_KEY)
 
+
+const extractProductIds=(items=[])=>{
+return items.map((item)=>item.itemId ||item.productId ||item._id).filter(Boolean)
+}
+
+
+
+
 // pacing user order from frontend
 const placeOrder= async (req,res)=>{
 
-const frontend_url= "http://localhost:5174"
+const frontend_url= "http://localhost:5173"
 
 // for creat a new order we use try bloak
 try {
@@ -19,7 +27,29 @@ try {
         address:req.body.address
     })
     await newOrder.save(); // save the order in the database
-    await userModel.findByIdAndUpdate(req.body.userId,{cartData:{}});  // cleaning the user cart data
+    const productIds=extractProductIds(newOrder.items);
+
+
+    await userModel.findByIdAndUpdate(req.body.userId,
+        {
+            $set:{cartData:{}},
+            $push:{
+                pastOrders:{
+           orderId:newOrder._id,
+           amount:newOrder.amount,
+           products:productIds,
+           itemCount:newOrder.items.length,
+           date:newOrder.date
+        }
+            }
+        });  
+    
+    
+    
+    
+    
+    
+    // cleaning the user cart data
 
     const line_items= req.body.items.map((item)=>({   // whataver item we gat from user we creat a line items which nessary for stripe payment
 
@@ -70,14 +100,25 @@ const varifyOrder =async (req,res)=>{
 const {orderId,success} =req.body;
 
    try {
+    const orderRecord=await orderModel.findById(orderId);
     if (success=="true") {
 
         await orderModel.findByIdAndUpdate(orderId,{payment:true});
         res.json({success:true,message:"paid"})
         
     }else{
-        await orderModel.findByIdAndDelete(orderId)
-        res.json({success:false,message:"NOT PAID"})
+await orderModel.findByIdAndDelete(orderId);
+if(!orderRecord?.userId){
+    await userModel.findByIdAndUpdate(orderRecord.userId,
+        {
+            $pull:{
+                pastOrders:{orderId:orderId}
+            }
+        });
+
+
+}
+    res.json({success:false,message:"NOT PAID"})
     }
     
    } catch (error) {
@@ -140,5 +181,34 @@ res.json({success:true,message:"Status Updated"})
 }
 
 
-
 export {placeOrder,varifyOrder,userOrders,listOrders,updateStatus}
+
+export const getUserOrderHistory=async(req,res)=>{
+const {userId}=req.params;
+
+try {
+const orders=await orderModel.find({userId});
+const noramalizedOrders=orders.map((order)=>{
+const ids=order.items?.map((item)=>item._id||item.id||item.itemId||item.productId).filter(Boolean)||[];
+if(ids.length<1){
+    return ids[0]||null;
+}
+return ids;
+}).filter((entry)=>entry&&entry.length!==0);
+res.json({success:true,data:noramalizedOrders})
+
+
+    
+} catch (error) {
+    console.log(error)
+    res.json({success:false,message:"Error"})
+    
+}
+
+
+
+
+
+
+
+}
