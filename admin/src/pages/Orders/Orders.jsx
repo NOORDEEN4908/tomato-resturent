@@ -38,6 +38,31 @@ if(response.data.success){
 
 }
 
+const paymentHandler=async (orderId, paid)=>{
+  const response = await axios.post(url+"/api/order/payment",{
+    orderId,
+    paid
+  });
+  if(response.data.success){
+    await fetchAllOrders();
+    toast.success("Payment status updated");
+  }else{
+    toast.error(response.data.message || "Error updating payment");
+  }
+}
+
+const deleteHandler = async(orderId)=>{
+  const confirmed = window.confirm("Delete this order?");
+  if(!confirmed) return;
+  const response = await axios.post(url+"/api/order/delete",{orderId});
+  if(response.data.success){
+    toast.success("Order deleted");
+    await fetchAllOrders();
+  }else{
+    toast.error(response.data.message || "Error deleting order");
+  }
+}
+
 useEffect(()=>{
 
 fetchAllOrders();
@@ -75,14 +100,27 @@ fetchAllOrders();
             </div>
             <p>Items:{order.items.length}</p>
             <p>${order.amount}</p>
+           
             <select onChange={(event)=>statusHandler(event,order._id)} value={order.status} >
               <option value="Food Processing">Food Processing</option>
               <option value="Out for delivery">Out for delivery</option>
               <option value="Delivered">Delivered</option>
 
             </select>
-
+            <button className="btn-delete" onClick={()=>deleteHandler(order._id)}>Delete</button>
+            <p>Payment: {order.payment ? "Paid" : "Unpaid"} ({order.paymentMethod || "card"})</p>
+            {order.paymentMethod === "cash" && (
+              <div className="payment-actions">
+                <button className="btn-paid" onClick={()=>paymentHandler(order._id,true)} disabled={order.payment}>Mark Paid</button>
+                {!order.payment && (
+                  <button className="btn-unpaid" onClick={()=>paymentHandler(order._id,false)} disabled={!order.payment}>Mark Unpaid</button>
+                )}
+              </div>
+            )}
+           
+         
             </div>
+            
 
 
         ))}

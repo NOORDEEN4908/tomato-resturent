@@ -17,7 +17,7 @@ const StoreContextProvider = (props) => {
   const [userProfile, setUserProfile] = useState(null);
   const [showProfileSetup, setShowProfileSetup] = useState(false);
 
-  const url = import.meta.env.VITE_API_URL || "http://localhost:4000";
+  const url = "http://localhost:4000";
 
   // -----------------------------
   // CART FUNCTIONS

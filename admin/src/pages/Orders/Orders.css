@@ -31,6 +31,67 @@ font-weight: 600;
     outline: none;
 }
 
+.payment-actions{
+    display:flex;
+    gap:8px;
+    margin-top:6px;
+    flex-wrap:wrap;
+}
+
+.payment-actions button{
+    display: flex;
+    padding:8px 12px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:600;
+    color:white;
+    transition:all 0.2s ease;
+}
+
+.btn-paid{
+    background: #22c55e;
+}
+
+.btn-paid:disabled{
+    opacity:0.6;
+    cursor:not-allowed;
+}
+
+.btn-paid:not(:disabled):hover{
+    background:#16a34a;
+}
+
+.btn-unpaid{
+    background:#f97316;
+}
+
+.btn-unpaid:disabled{
+    opacity:0.6;
+    cursor:not-allowed;
+}
+
+.btn-unpaid:not(:disabled):hover{
+    background:#ea580c;
+}
+
+.btn-delete{
+    margin-top:6px;
+    padding:6px 10px;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    font-weight:600;
+    color:white;
+    background:#ef4444;
+    transition:all 0.2s ease;
+    width:max-content;
+}
+
+.btn-delete:hover{
+    background:#dc2626;
+}
+
 @media (max-width:1000px) {
     .order-item{
     font-size: 12px;

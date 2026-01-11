@@ -39,3 +39,45 @@
 .place-order .cart-total button{
     margin-top: 30px;
 }
+
+.payment-method{
+    margin-top:20px;
+    padding:16px;
+    border:1px solid #e5e5e5;
+    border-radius:8px;
+    background:#fafafa;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.payment-option{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:10px;
+    border:1px solid #dcdcdc;
+    border-radius:6px;
+    cursor:pointer;
+    transition:all 0.2s ease;
+    background:white;
+}
+
+.payment-option:hover{
+    border-color: tomato;
+    box-shadow:0 4px 10px rgba(0,0,0,0.05);
+}
+
+.payment-option.active{
+    border-color: tomato;
+    background: #fff4f0;
+    box-shadow:0 4px 12px rgba(255,99,71,0.12);
+}
+
+.payment-option input{
+    accent-color: tomato;
+}
+
+.payment-option .icon{
+    font-size:18px;
+}

@@ -3,6 +3,7 @@ import "./PlaceOrder.css"
 import { StoreContext } from '../../context/StoreContext'
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 
 const PlaceOrder = () => {
 
@@ -19,6 +20,8 @@ const PlaceOrder = () => {
     country:"",
     phone:""
   })
+
+  const [paymentMethod,setPaymentMethod]=useState("card")
 
 const onChangeHandler =(event)=>{
   const name=event.target.name;
@@ -48,17 +51,22 @@ const placeOrder = async (event)=>{
     address:data,
     items:orderItems,
     amount:getTotalCartAmount()+2,
+    paymentMethod,
+    isPaid:false
   }
   let response =await axios.post(url+"/api/order/place",orderData,{headers:{token}})  // send the order data to the api
 
   if (response.data.success) {
     const {session_url} =response.data;
-    window.location.replace(session_url);
-  
-    
+    if(paymentMethod==="card" && session_url){
+      window.location.replace(session_url);
+    }else{
+      toast.success(response.data.message || "Cash order placed");
+      navigate("/userorders")
+    }
   }
   else{
-   alert ("Error")
+   toast.error("Error placing order")
   }
 }
 
@@ -99,20 +107,45 @@ if (!token) {
           <div>
           <div className="cart-total-details">
               <p>Subtotal</p>
-              <p>${getTotalCartAmount()}</p>
+              <p>Rs.{getTotalCartAmount()}</p>
             </div>
             <hr />
             <div className="cart-total-details">
               <p>Delivery Fee</p>
-              <p>${getTotalCartAmount()===0?0:2}</p>
+              <p>Rs.{getTotalCartAmount()===0?0:2}</p>
             </div>
             <hr />
             <div className="cart-total-details">
               <b>Total</b>
-              <b>${ getTotalCartAmount()===0?0:getTotalCartAmount()+2}</b>
+              <b>Rs.{ getTotalCartAmount()===0?0:getTotalCartAmount()+2}</b>
             </div>
            
 
+          </div>
+          <div className="payment-method">
+            <h3>Payment Method</h3>
+            <label className={`payment-option ${paymentMethod==="card" ? "active" : ""}`}>
+              <input
+                type="radio"
+                name="payment"
+                value="card"
+                checked={paymentMethod==="card"}
+                onChange={()=>setPaymentMethod("card")}
+              />
+              <span className="icon">💳</span>
+              <span>Card </span>
+            </label>
+            <label className={`payment-option ${paymentMethod==="cash" ? "active" : ""}`}>
+              <input
+                type="radio"
+                name="payment"
+                value="cash"
+                checked={paymentMethod==="cash"}
+                onChange={()=>setPaymentMethod("cash")}
+              />
+              <span className="icon">💵</span>
+              <span>Cash on Delivery</span>
+            </label>
           </div>
           <button type='submit' >PROCEED TO PAYMENT</button>
         </div>

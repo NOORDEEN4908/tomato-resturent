@@ -2,8 +2,6 @@ import userModel from "../models/usermodels.js";
 import jwt from "jsonwebtoken" //use for user authantication
 import bcrypt from "bcrypt"
 import validator from "validator"
-import { response } from "express";
-import { accessSync } from "fs";
 
 // login user
 const loginUser=async(req,res)=>{

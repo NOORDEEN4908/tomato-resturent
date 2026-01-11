@@ -7,7 +7,12 @@ import { StoreContext } from '../../context/StoreContext'
 const Navbar = ({ setShowLogin }) => {
   const [menu, setMenu] = useState("menu")
 
-  const { getTotalCartAmount, token, setToken } = useContext(StoreContext);
+  const { getTotalCartAmount, cartItems, token, setToken } = useContext(StoreContext);
+  
+  // Calculate total number of items in cart
+  const getCartItemCount = () => {
+    return Object.values(cartItems).reduce((total, quantity) => total + quantity, 0);
+  };
 
   const navigate =useNavigate()
   
@@ -34,7 +39,9 @@ const Navbar = ({ setShowLogin }) => {
         <img src={assets.search_icon} alt="" />
         <div className="navbar-search-icon">
           <Link to={'/cart'} > <img src={assets.basket_icon} alt="" /></Link>
-          <div className={getTotalCartAmount() === 0 ? "" : "dot"}></div>
+          {getCartItemCount() > 0 && (
+            <div className="cart-badge">{getCartItemCount()}</div>
+          )}
         </div>
         {!token ? 
   <button onClick={() => {setShowLogin(true)}}>Sign in</button>
@@ -46,7 +53,7 @@ const Navbar = ({ setShowLogin }) => {
                 <img src={assets.profile_icon} alt="" /><p>Profile</p>
               </li>
               <hr />
-      <li onClick={()=>navigate('/myorders')} ><img src={assets.bag_icon} alt="Bag Icon" /><p>Orders</p></li>
+      <li onClick={()=>navigate('/userorders')} ><img src={assets.bag_icon} alt="Bag Icon" /><p>Orders</p></li>
       <hr />
       <li onClick={logout} ><img src={assets.logout_icon} alt="Logout Icon" /><p>LogOut</p></li>
     </ul>

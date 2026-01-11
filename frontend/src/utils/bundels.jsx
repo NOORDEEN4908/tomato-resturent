@@ -1,15 +1,14 @@
 import { normalizeProductId } from "./personalization";
 
+// Threshold for high-value bundle prompt (set in LKR)
 export const BUNDLE_THRESHOLD = 1500;
 
-const buildProductLookup=(products=[])=>
-
-products.reduce((acc,p)=>{
-const id=normalizeProductId(p);
-if(id) acc[id]=p;
-return acc;
-
-},{});
+const buildProductLookup = (products = []) =>
+  products.reduce((acc, p) => {
+    const id = normalizeProductId(p);
+    if (id) acc[id] = p;
+    return acc;
+  }, {});
 
 const deriveFrequentCombos=(pastOrders=[])=>{
 
@@ -62,12 +61,14 @@ const picks = Array.isArray(products)
   ? products.filter((p) => p.tags?.includes(mealType))
   : [];
 
-suggestions.push({
-    id:"time-"+Date.now(),
-    type:"time-based",
-    title:`recommended for ${mealType}`,
-    items:picks.slice(0,3).map((p)=>p.name),
-});
+if (picks.length) {
+  suggestions.push({
+      id:"time-"+Date.now(),
+      type:"time-based",
+      title:`recommended for ${mealType}`,
+      items:picks.slice(0,3).map((p)=>p.name),
+  });
+}
 
 
 };
